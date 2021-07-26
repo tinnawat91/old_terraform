@@ -1,0 +1,117 @@
+---
+- name: Install RabbitMQ
+  hosts: all
+  tasks:
+    - name: "1: Install erlang and rabbitmq"
+      block:
+        - name: Install curl
+          yum:
+            name: curl
+            state: latest 
+
+        - name: Add erlang to YUM repository
+          shell: curl -s https://packagecloud.io/install/repositories/rabbitmq/erlang/script.rpm.sh | sudo bash
+
+        - name: Clean yum cache and update
+          shell: yum clean all
+    
+        - name: Makecache 
+          shell: yum -y makecache
+
+        - name: Install erlang
+          yum:
+            name: erlang
+            state: latest
+
+        - name: Add rabbitmq repository
+          shell: curl -s https://packagecloud.io/install/repositories/rabbitmq/rabbitmq-server/script.rpm.sh | sudo bash
+
+        - name: make cache
+          shell: yum makecache -y --disablerepo='*' --enablerepo='rabbitmq_rabbitmq-server'
+      
+        - name: Install RabbitMQ
+          yum:
+            name: rabbitmq-server
+    
+    - name: "2: Stop and disable firewalld"
+      block:
+        - name: Disable firewalld
+          service:
+            name: firewalld
+            state: stopped
+            enabled: no
+    
+    - name: "3: Start and enable rabbitmq-server"
+      block:
+        - name: Start and Enable rabbitmq-server
+          service:
+            name: rabbitmq-server
+            state: started
+            enabled: yes
+
+    - name: "4: Enable rabbitmq management (web console)"
+      block:
+        - name: Enable RabbitMQ Management Dashboard
+          shell: rabbitmq-plugins enable rabbitmq_management
+
+    - name: "5: Admin user"
+      block:
+        - name: Add user name with password
+          shell: rabbitmqctl add_user admin password
+
+        - name: Set tags
+          shell: rabbitmqctl set_user_tags admin administrator
+
+        - name: Grant permission
+          shell: rabbitmqctl set_permissions -p / admin ".*" ".*" ".*"
+          
+        - name: Delete guest user
+          rabbitmq_user:
+            user: guest
+            state: absent
+
+    - name: "6.1: Node1"
+      block:
+        - name: Register .erlang.cookie on node1
+          shell: cat /var/lib/rabbitmq/.erlang.cookie
+          register: cookie
+
+        - name: Save to ansible control node
+          copy:
+            content: "{{ cookie.stdout }}"
+            dest: ~/terraform-azure-rabbitmq/.erlang.cookie
+          delegate_to: localhost
+
+        - name: Start rabbitmq-server
+          shell: rabbitmqctl start_app
+      when: ansible_hostname == "rabbitmq-1"
+
+    - name: "6.2: Other node"
+      block:
+        - name: Wait until .erlang.cookie on localhost is present
+          wait_for:
+            path: ~/terraform-azure-rabbitmq/.erlang.cookie
+          delegate_to: localhost
+        
+        - name: Copy .erlang.cookie on localhost to node
+          copy:
+            src: ~/terraform-azure-rabbitmq/.erlang.cookie
+            dest: /var/lib/rabbitmq/.erlang.cookie
+            owner: rabbitmq
+            group: rabbitmq
+            mode: 0400
+
+        - name: Restart rabbitmq-server
+          service:
+            name: rabbitmq-server
+            state: restarted
+
+        - name: Stop rabbitmq-server
+          shell: rabbitmqctl stop_app
+
+        - name: Join cluster
+          shell: rabbitmqctl join_cluster rabbit@rabbitmq-1
+
+        - name: Start rabbitmq-server
+          shell: rabbitmqctl start_app
+      when: ansible_hostname != "rabbitmq-1"
