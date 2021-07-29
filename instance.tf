@@ -235,7 +235,6 @@ resource "azurerm_virtual_machine" "VirtualMachine" {
 }
 
 # Alert action group
-<<<<<<< HEAD
 resource "azurerm_monitor_action_group" "MonitorActionGroup" {
     count = "${length(var.ActionGroups)}"
     name = "${lookup(var.ActionGroups[count.index], "name")}"
@@ -245,16 +244,6 @@ resource "azurerm_monitor_action_group" "MonitorActionGroup" {
     email_receiver {
         name = "${lookup(var.ActionGroups[count.index], "email_name")}"
         email_address = "${lookup(var.ActionGroups[count.index], "email_address")}"
-=======
-resource "azurerm_monitor_action_group" "ActionGroup" {
-    name = "${var.resource_prefix}_email_alert"
-    resource_group_name = azurerm_resource_group.ResourceGroup.name
-    short_name = "email_alert"
-    
-    email_receiver {
-        name = "Tinnawat.t"
-        email_address = "tinnawat.t@g-able.com"
->>>>>>> 167b06cbcfb2dc890816787b360a420ad66534c1
     }
 
 }
@@ -267,7 +256,6 @@ resource "azurerm_monitor_action_group" "ActionGroup" {
 # }
 
 # Activity log alert
-<<<<<<< HEAD
 resource "azurerm_monitor_activity_log_alert" "MonitorActivityLogsAlert" {
     count = "${length(var.ActivityLogsAlert)}"
     name = "${lookup(var.ActivityLogsAlert[count.index], "name")}"
@@ -282,29 +270,12 @@ resource "azurerm_monitor_activity_log_alert" "MonitorActivityLogsAlert" {
 
     action {
         action_group_id = azurerm_monitor_action_group.MonitorActionGroup.0.id
-=======
-resource "azurerm_monitor_activity_log_alert" "LogAlert" {
-    count = var.vm_count
-    name = "${var.resource_prefix}_deallocate_vm"
-    resource_group_name = azurerm_resource_group.ResourceGroup.name
-    scopes = azurerm_virtual_machine.VirtualMachine.*.id 
-    description = "Email alert when virtual machine deallocate(power off)"
-
-    criteria {
-        category = "Administrative"
-        operation_name = "Microsoft.Compute/virtualMachines/deallocate/action"
-    }
-
-    action {
-        action_group_id = azurerm_monitor_action_group.ActionGroup.id
->>>>>>> 167b06cbcfb2dc890816787b360a420ad66534c1
     }
     tags = {
         "terraform" = "rabbitmq"
     }
 }
 
-<<<<<<< HEAD
 # Metric Alert
 resource "azurerm_monitor_metric_alert" "MonitorMetricAlert" {
     count = "${length(var.MetricAlert)}"
@@ -330,8 +301,6 @@ resource "azurerm_monitor_metric_alert" "MonitorMetricAlert" {
         "terraform" = "rabbitmq"
     }
 }
-=======
->>>>>>> 167b06cbcfb2dc890816787b360a420ad66534c1
 # fetch public ip
 data "azurerm_public_ip" "GetPublicIP" {
     count = var.vm_count
