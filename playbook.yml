@@ -115,3 +115,19 @@
         - name: Start rabbitmq-server
           shell: rabbitmqctl start_app
       when: ansible_hostname != "rabbitmq-1"
+
+    # - name: "7: Delete .erlang.cookie on localhost"
+    #   block:
+    #     - name: Delete .erlang.cookie
+    #       file:
+    #         path: ~/terraform-azure-rabbitmq/.erlang.cookie
+    #         state: absent
+    #       delegate_to: localhost
+
+    # - name: "8: Clear ansible inventory"
+    #   block:
+    #     - name: Clear inventory
+    #       copy:
+    #         content: ""
+    #         dest: ~/terraform-azure-rabbitmq/inventory
+    #       delegate_to: localhost

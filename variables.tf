@@ -50,3 +50,83 @@ variable "healthprobe" {
     }
     ]
 }
+
+variable "ActionGroups" {
+    description = "Action groups for azure monitor"
+
+    default = [{
+        name = "terraform_email_alert"
+        short_name = "email_alert"
+        email_name = "tinnawat.t"
+        email_address = "tinnawat.t@g-able.com"
+    }]
+}
+variable "ActivityLogsAlert" {
+    description = "Monitor Activity Logs Alert"
+
+    default = [{
+        name = "terraform_deallocate_vm"
+        description = "Email alert when stop virtual machine through azure portal (stop vm)"
+        category = "Administrative"
+        operation_name = "Microsoft.Compute/virtualMachines/deallocate/action"
+        level = "Informational"
+        resource_type = "Microsoft.Compute/virtualMachines"
+    },{
+        name = "terraform_poweroff_vm"
+        description = "Email alert when shutdown virtual machine"
+        category = "Administrative"
+        operation_name = "Microsoft.Compute/virtualMachines/powerOff/action"
+        level = "Error"
+        resource_type = "Microsoft.Compute/virtualMachines"
+    }]
+}
+
+variable "MetricAlert" {
+    description = "Monitor Metric Alert"
+
+    default = [{
+        name = "terraform_cpu_warning"
+        description = "Email warning when percentage cpu greater than 70 for 5 minute "
+        metric_namespace = "Microsoft.Compute/virtualMachines"
+        metric_name = "Percentage CPU"
+        aggregation = "Average"
+        operator = "GreaterThan"
+        threshold = 70
+        severity = 2
+        target_resource_type = "Microsoft.Compute/virtualMachines"
+        target_resource_location = "Southeast Asia"
+    },{
+        name = "terraform_cpu_critical"
+        description = "Email alert when percentage cpu greater than 80 for 5 minute "
+        metric_namespace = "Microsoft.Compute/virtualMachines"
+        metric_name = "Percentage CPU"
+        aggregation = "Average"
+        operator = "GreaterThan"
+        threshold = 80
+        severity = 1
+        target_resource_type = "Microsoft.Compute/virtualMachines"
+        target_resource_location = "Southeast Asia"
+    },{
+        name = "terraform_memory_warning"
+        description = "Email warning when percentage cpu greater than 80 for 5 minute "
+        metric_namespace = "Microsoft.Compute/virtualMachines"
+        metric_name = "Available Memory Bytes"
+        aggregation = "Average"
+        operator = "LessThan"
+        threshold = 1000000
+        severity = 2
+        target_resource_type = "Microsoft.Compute/virtualMachines"
+        target_resource_location = "Southeast Asia"
+    },{
+        name = "terraform_memory_citical"
+        description = "Email alert when percentage cpu greater than 80 for 5 minute "
+        metric_namespace = "Microsoft.Compute/virtualMachines"
+        metric_name = "Available Memory Bytes"
+        aggregation = "Average"
+        operator = "LessThan"
+        threshold = 500000
+        severity = 1
+        target_resource_type = "Microsoft.Compute/virtualMachines"
+        target_resource_location = "Southeast Asia"
+    }]
+}
